@@ -1,0 +1,7 @@
+.vercel
+node_modules
+school-backend/node_modules
+.env
+.env.local
+*.log
+.DS_Store
