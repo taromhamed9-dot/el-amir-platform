@@ -38,6 +38,7 @@ router.delete('/courses/:id/sessions/:session_id', permissionGuard('manage_cours
 router.get('/payments', ctrl.getPayments);
 router.post('/payments', permissionGuard('manage_payments'), ctrl.createPayment);
 router.post('/payments/generate', permissionGuard('manage_payments'), ctrl.generatePayments);
+router.post('/payments/bulk-mark', permissionGuard('manage_payments'), ctrl.bulkMarkPayments);
 router.patch('/payments/:id/verify', permissionGuard('manage_payments'), ctrl.verifyPayment);
 router.post('/payments/remind', permissionGuard('manage_payments'), ctrl.sendPaymentReminders);
 

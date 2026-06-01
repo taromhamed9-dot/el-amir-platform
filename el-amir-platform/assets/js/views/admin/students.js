@@ -154,12 +154,22 @@ const AdminStudents = (() => {
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">الدورة</label>
-          <select class="form-select" name="course_id">
-            <option value="">بدون دورة</option>
-            ${courses.map(c => `<option value="${c.id}">${c.name} (${c.level}) — ${c.enrolled_count}/${c.capacity}</option>`).join('')}
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">الدورة</label>
+            <select class="form-select" name="course_id">
+              <option value="">بدون دورة</option>
+              ${courses.map(c => `<option value="${c.id}">${c.name} (${c.level}) — ${c.enrolled_count}/${c.capacity}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">طريقة الدفع *</label>
+            <select class="form-select" name="payment_model" required>
+              <option value="per_session">حصة / حصة</option>
+              <option value="monthly">شهري (دفعة واحدة للشهر)</option>
+            </select>
+            <small style="color:var(--text-muted)">طريقة الدفع تتحكم في عدد الأعمدة التي تظهر في صفحة الدفع</small>
+          </div>
         </div>
         <button type="submit" class="btn btn-accent" style="width:100%;margin-top:8px">تسجيل التلميذ</button>
       </form>
@@ -268,12 +278,21 @@ const AdminStudents = (() => {
               <select class="form-select" name="level">${Utils.getLevelOptions().map(l => `<option value="${l}" ${s.level === l ? 'selected' : ''}>${l}</option>`).join('')}</select>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">الدورة</label>
-            <select class="form-select" name="course_id">
-              <option value="">بدون دورة</option>
-              ${courses.map(c => `<option value="${c.id}" ${s.course_id === c.id ? 'selected' : ''}>${c.name} (${c.level})</option>`).join('')}
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">الدورة</label>
+              <select class="form-select" name="course_id">
+                <option value="">بدون دورة</option>
+                ${courses.map(c => `<option value="${c.id}" ${s.course_id === c.id ? 'selected' : ''}>${c.name} (${c.level})</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">طريقة الدفع</label>
+              <select class="form-select" name="payment_model">
+                <option value="per_session" ${s.payment_model === 'per_session' ? 'selected' : ''}>حصة / حصة</option>
+                <option value="monthly" ${s.payment_model === 'monthly' ? 'selected' : ''}>شهري</option>
+              </select>
+            </div>
           </div>
           <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px">حفظ التعديلات</button>
         </form>

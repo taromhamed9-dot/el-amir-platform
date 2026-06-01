@@ -71,7 +71,8 @@ const AdminCourses = (() => {
         <div class="course-meta">
           <span>${Icons.graduationCap} ${c.level}</span>
           <span>${Icons.teachers} ${c.teachers ? c.teachers.full_name : '—'}</span>
-          <span>${Icons.money} ${Utils.formatCurrency(c.price)}</span>
+          <span title="سعر الحصة الواحدة">${Icons.money} ${Utils.formatCurrency(c.session_price || 0)} / حصة</span>
+          <span title="السعر الشهري المحسوب تلقائياً" style="color:var(--text-muted)">≈ ${Utils.formatCurrency((c.session_price || 0) * (c.sessions_per_month || 4))} / شهر</span>
         </div>
         <div class="capacity-bar">
           <div class="capacity-text"><span>${c.enrolled_count}/${c.capacity} تلميذ</span><span>${pct}%</span></div>
@@ -104,7 +105,21 @@ const AdminCourses = (() => {
           <div class="form-group"><label class="form-label">الطاقة *</label><input type="number" class="form-input" name="capacity" required min="1" value="20"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">السعر (دج) *</label><input type="number" class="form-input" name="price" required min="0"></div>
+          <div class="form-group">
+            <label class="form-label">سعر الحصة (دج) *</label>
+            <input type="number" class="form-input" name="session_price" required min="0" step="50" placeholder="مثلاً 500" oninput="AdminCourses._recalcMonthly()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">عدد الحصص في الشهر *</label>
+            <input type="number" class="form-input" name="sessions_per_month" required min="1" max="20" value="4" oninput="AdminCourses._recalcMonthly()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">السعر الشهري المحسوب</label>
+            <input type="text" class="form-input" id="course-monthly-preview" disabled value="— دج" style="background:rgba(124,58,237,0.1);font-weight:700">
+            <small style="color:var(--text-muted)">= سعر الحصة × عدد الحصص</small>
+          </div>
           <div class="form-group"><label class="form-label">الأستاذ</label><select class="form-select" name="teacher_id"><option value="">بدون</option>${teachers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('')}</select></div>
         </div>
         <div class="form-row">
@@ -121,13 +136,26 @@ const AdminCourses = (() => {
   async function submitAdd(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target));
-    body.price = Number(body.price);
+    body.session_price = Number(body.session_price);
+    body.sessions_per_month = Number(body.sessions_per_month);
+    // Server recomputes `price` from session_price × sessions_per_month,
+    // but send it anyway so old code paths see a sensible value.
+    body.price = body.session_price * body.sessions_per_month;
     body.capacity = Number(body.capacity);
     if (!body.teacher_id) delete body.teacher_id;
     if (!body.start_date) delete body.start_date;
     if (!body.end_date) delete body.end_date;
     try { await API.post('/admin/courses', body); Modal.close(); Toast.success('تم إنشاء الدورة'); loadCourses(); }
     catch (err) { Toast.error(err.message); }
+  }
+
+  // Live update the read-only monthly preview field whenever
+  // session_price or sessions_per_month changes.
+  function _recalcMonthly() {
+    const sp = parseFloat(document.querySelector('[name=session_price]')?.value) || 0;
+    const spm = parseInt(document.querySelector('[name=sessions_per_month]')?.value, 10) || 0;
+    const out = document.getElementById('course-monthly-preview');
+    if (out) out.value = `${(sp * spm).toLocaleString('ar-DZ')} دج`;
   }
 
   async function viewCourse(id) {
@@ -183,7 +211,20 @@ const AdminCourses = (() => {
             <div class="form-group"><label class="form-label">المادة</label><input type="text" class="form-input" name="subject" value="${c.subject}" required></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">السعر</label><input type="number" class="form-input" name="price" value="${c.price}" required></div>
+            <div class="form-group">
+              <label class="form-label">سعر الحصة (دج)</label>
+              <input type="number" class="form-input" name="session_price" value="${c.session_price || 0}" min="0" step="50" required oninput="AdminCourses._recalcMonthlyEdit()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">عدد الحصص في الشهر</label>
+              <input type="number" class="form-input" name="sessions_per_month" value="${c.sessions_per_month || 4}" min="1" max="20" required oninput="AdminCourses._recalcMonthlyEdit()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">السعر الشهري المحسوب</label>
+              <input type="text" class="form-input" id="course-monthly-preview-edit" disabled value="${((c.session_price || 0) * (c.sessions_per_month || 4)).toLocaleString('ar-DZ')} دج" style="background:rgba(124,58,237,0.1);font-weight:700">
+            </div>
             <div class="form-group"><label class="form-label">الطاقة</label><input type="number" class="form-input" name="capacity" value="${c.capacity}" required></div>
           </div>
           <div class="form-group"><label class="form-label">الأستاذ</label><select class="form-select" name="teacher_id"><option value="">بدون</option>${teachers.map(t => `<option value="${t.id}" ${c.teacher_id === t.id ? 'selected' : ''}>${t.full_name}</option>`).join('')}</select></div>
@@ -198,11 +239,20 @@ const AdminCourses = (() => {
   async function submitEdit(e, id) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target));
-    body.price = Number(body.price);
+    body.session_price = Number(body.session_price);
+    body.sessions_per_month = Number(body.sessions_per_month);
+    body.price = body.session_price * body.sessions_per_month;
     body.capacity = Number(body.capacity);
     if (!body.teacher_id) body.teacher_id = null;
     try { await API.put(`/admin/courses/${id}`, body); Modal.close(); Toast.success('تم التحديث'); loadCourses(); }
     catch (err) { Toast.error(err.message); }
+  }
+
+  function _recalcMonthlyEdit() {
+    const sp = parseFloat(document.querySelector('[name=session_price]')?.value) || 0;
+    const spm = parseInt(document.querySelector('[name=sessions_per_month]')?.value, 10) || 0;
+    const out = document.getElementById('course-monthly-preview-edit');
+    if (out) out.value = `${(sp * spm).toLocaleString('ar-DZ')} دج`;
   }
 
   async function deleteCourse(id) {
@@ -212,5 +262,9 @@ const AdminCourses = (() => {
     catch (err) { Toast.error(err.message); }
   }
 
-  return { render, showAddModal, submitAdd, viewCourse, addSession, editCourse, submitEdit, deleteCourse, filterLevel, filterStatus, searchCourses };
+  return {
+    render, showAddModal, submitAdd, viewCourse, addSession, editCourse, submitEdit,
+    deleteCourse, filterLevel, filterStatus, searchCourses,
+    _recalcMonthly, _recalcMonthlyEdit
+  };
 })();
