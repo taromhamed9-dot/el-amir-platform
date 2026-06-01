@@ -7,6 +7,15 @@ const jwt = require('jsonwebtoken');
 const { hashToken } = require('../middleware/auth');
 const crypto = require('crypto');
 
+// Coerce + clamp an integer to [min, max], falling back to `fallback`
+// when the input isn't a parseable number. Used everywhere we accept
+// session counts so callers can't insert 0 or 999.
+function clampInt(v, min, max, fallback) {
+  const n = parseInt(v, 10);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+
 // ── Dashboard Stats ────────────────────────────────
 exports.getStats = async (req, res, next) => {
   try {
@@ -145,6 +154,16 @@ exports.createStudent = async (req, res, next) => {
       }
     }
 
+    // payment_model is fixed at enrollment time. Defaults to `per_session`
+    // so generated payment rows match the "ح1 ح2 ح3 …" grid even if the
+    // admin didn't think about pricing yet. Switching after the fact is a
+    // simple UPDATE — but mid-month switching while payments already exist
+    // for that month will produce duplicate rows; the admin should
+    // regenerate that month after switching.
+    const paymentModel = ['monthly', 'per_session'].includes(body.payment_model)
+      ? body.payment_model
+      : 'per_session';
+
     const { data: student, error } = await supabase
       .from('students')
       .insert({
@@ -159,7 +178,8 @@ exports.createStudent = async (req, res, next) => {
         level: body.level,
         school_year: body.school_year || '2025-2026',
         course_id: body.course_id || null,
-        teacher_id: teacherId
+        teacher_id: teacherId,
+        payment_model: paymentModel
       })
       .select()
       .single();
@@ -184,6 +204,12 @@ exports.updateStudent = async (req, res, next) => {
     const body = sanitizeObject(req.body);
     delete body.password;
     delete body.username;
+
+    // Validate payment_model if present — silently drop bad values so a
+    // typo doesn't 500 the request.
+    if (body.payment_model && !['monthly', 'per_session'].includes(body.payment_model)) {
+      delete body.payment_model;
+    }
 
     body.updated_at = new Date().toISOString();
 
@@ -459,8 +485,16 @@ exports.getCourse = async (req, res, next) => {
 exports.createCourse = async (req, res, next) => {
   try {
     const body = sanitizeObject(req.body);
-    const reqErr = validateRequired(['name', 'subject', 'level', 'price', 'capacity'], body);
+    // session_price is now the canonical course price. We keep `price`
+    // (monthly_price) so existing code that reads it still works.
+    const reqErr = validateRequired(['name', 'subject', 'level', 'session_price', 'capacity'], body);
     if (reqErr) return res.status(400).json({ error: reqErr });
+
+    const sessionsPerMonth = clampInt(body.sessions_per_month, 1, 20, 4);
+    const sessionPrice = Number(body.session_price) || 0;
+    // monthly_price (`price`) is derived and stored so admins can still see
+    // a "total per month" in lists. It's recomputed on update.
+    const monthlyPrice = sessionPrice * sessionsPerMonth;
 
     const { data, error } = await supabase
       .from('courses')
@@ -468,7 +502,9 @@ exports.createCourse = async (req, res, next) => {
         name: body.name,
         subject: body.subject,
         level: body.level,
-        price: body.price,
+        session_price: sessionPrice,
+        sessions_per_month: sessionsPerMonth,
+        price: monthlyPrice,
         capacity: body.capacity,
         teacher_id: body.teacher_id || null,
         start_date: body.start_date || null,
@@ -491,6 +527,21 @@ exports.updateCourse = async (req, res, next) => {
     const { id } = req.params;
     const body = sanitizeObject(req.body);
     body.updated_at = new Date().toISOString();
+
+    // Recompute monthly price whenever session_price or sessions_per_month
+    // is updated, so the legacy `price` column stays in sync.
+    if (body.session_price != null || body.sessions_per_month != null) {
+      const { data: current } = await supabase
+        .from('courses')
+        .select('session_price, sessions_per_month')
+        .eq('id', id)
+        .single();
+      const sp = Number(body.session_price ?? current?.session_price ?? 0);
+      const spm = clampInt(body.sessions_per_month ?? current?.sessions_per_month, 1, 20, 4);
+      body.session_price = sp;
+      body.sessions_per_month = spm;
+      body.price = sp * spm;
+    }
 
     const { data, error } = await supabase.from('courses').update(body).eq('id', id).select().single();
     if (error) throw error;
@@ -587,27 +638,33 @@ exports.deleteSession = async (req, res, next) => {
 };
 
 // ── Payments ───────────────────────────────────────
+//
+// Returns payment rows for a given (month, course) pair PLUS — separately —
+// the list of all students enrolled in that course. The latter is important
+// so the frontend can render a row for every student even before any
+// payments are generated. We also expose `payment_model` per student so the
+// grid knows whether to render one wide cell (monthly) or N cells
+// (per_session).
 exports.getPayments = async (req, res, next) => {
   try {
-    const { month = getCurrentMonth(), status, search } = req.query;
+    const { month = getCurrentMonth(), status, search, course_id, student_id } = req.query;
 
-    // Load ALL payment records for the month ordered by session_number.
-    // The frontend matrix groups by student then displays one column per session.
     let query = supabase
       .from('payments')
-      .select('*, students(first_name, last_name, phone)')
+      .select('*, students(first_name, last_name, phone, payment_model, course_id), courses(name, session_price, sessions_per_month)')
       .eq('month', month)
       .order('student_id', { ascending: true })
       .order('session_number', { ascending: true });
 
-    if (status) query = query.eq('status', status);
+    if (status)     query = query.eq('status', status);
+    if (course_id)  query = query.eq('course_id', course_id);
+    if (student_id) query = query.eq('student_id', student_id);
 
     const { data, error } = await query;
     if (error) throw error;
 
     let payments = data || [];
 
-    // Name search (done in memory — avoids complex ilike join)
     if (search && search.trim()) {
       const q = search.trim().toLowerCase();
       payments = payments.filter(p => {
@@ -617,11 +674,37 @@ exports.getPayments = async (req, res, next) => {
       });
     }
 
+    // When a course is selected, load *all* enrolled students so the grid
+    // can show empty rows for students who have no generated payment yet.
+    // Without this the admin would have to hit "توليد" blindly to see who's
+    // missing.
+    let enrolledStudents = [];
+    let courseMeta = null;
+    if (course_id) {
+      const [stuRes, courseRes] = await Promise.all([
+        supabase
+          .from('students')
+          .select('id, first_name, last_name, phone, payment_model, status')
+          .eq('course_id', course_id)
+          .eq('status', 'active')
+          .order('first_name', { ascending: true }),
+        supabase
+          .from('courses')
+          .select('id, name, session_price, sessions_per_month, session_labels')
+          .eq('id', course_id)
+          .single()
+      ]);
+      enrolledStudents = stuRes.data || [];
+      courseMeta = courseRes.data || null;
+    }
+
     const totalExpected = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
     const collected     = payments.filter(p => p.status === 'paid').reduce((s, p) => s + Number(p.amount || 0), 0);
 
     res.json({
       payments,
+      students: enrolledStudents,
+      course: courseMeta,
       summary: { total_expected: totalExpected, collected, remaining: totalExpected - collected },
       total: payments.length,
       page: 1,
@@ -731,41 +814,79 @@ exports.createPayment = async (req, res, next) => {
   }
 };
 
+// Generate payment rows for ONE course in ONE month.
+//
+// - course_id is required (we no longer mass-generate for the whole school
+//   — that produced nonsense rows for students whose enrollment hadn't been
+//   priced yet).
+// - For each active student in the course:
+//     • payment_model = 'monthly'     → 1 row, session_number=1,
+//       amount = session_price × sessions_per_month
+//     • payment_model = 'per_session' → N rows, session_number=1..N,
+//       amount = session_price each
+// - Upsert with ignoreDuplicates=true so re-running is idempotent and
+//   won't clobber payments already marked paid.
 exports.generatePayments = async (req, res, next) => {
   try {
-    const { month, sessions = 4 } = req.body;
-    if (!month) return res.status(400).json({ error: 'يرجى تحديد الشهر' });
+    const { month, course_id } = req.body;
+    if (!month)     return res.status(400).json({ error: 'يرجى تحديد الشهر' });
+    if (!course_id) return res.status(400).json({ error: 'يرجى تحديد الدورة' });
 
-    const sessionCount = Math.max(1, Math.min(20, parseInt(sessions, 10) || 4));
+    const { data: course, error: cErr } = await supabase
+      .from('courses')
+      .select('id, name, session_price, sessions_per_month')
+      .eq('id', course_id)
+      .single();
+
+    if (cErr || !course) return res.status(404).json({ error: 'الدورة غير موجودة' });
+
+    const sessionCount = clampInt(req.body.sessions ?? course.sessions_per_month, 1, 20, 4);
+    const sessionPrice = Number(course.session_price) || 0;
+
+    if (sessionPrice <= 0) {
+      return res.status(400).json({
+        error: 'سعر الحصة لهذه الدورة هو 0. عدّل الدورة وأضف سعر الحصة قبل التوليد.'
+      });
+    }
 
     const { data: students, error: stuErr } = await supabase
       .from('students')
-      .select('id, course_id, courses(price)')
-      .eq('status', 'active')
-      .not('course_id', 'is', null);
+      .select('id, payment_model')
+      .eq('course_id', course_id)
+      .eq('status', 'active');
 
     if (stuErr) throw stuErr;
-
     if (!students || students.length === 0) {
-      return res.json({ count: 0, message: 'لا يوجد تلاميذ نشطين مسجلين' });
+      return res.json({ count: 0, students: 0, message: 'لا يوجد تلاميذ نشطين في هذه الدورة' });
     }
 
-    // Build one record per student × per session
     const inserts = [];
     students.forEach(s => {
-      for (let sn = 1; sn <= sessionCount; sn++) {
+      if (s.payment_model === 'monthly') {
+        // One merged row representing the entire month.
         inserts.push({
           student_id: s.id,
-          course_id: s.course_id,
+          course_id,
           month,
-          session_number: sn,
-          amount: s.courses ? Number(s.courses.price) / sessionCount : 0,
+          session_number: 1,
+          amount: sessionPrice * sessionCount,
           status: 'unpaid'
         });
+      } else {
+        // per_session: one row per session.
+        for (let sn = 1; sn <= sessionCount; sn++) {
+          inserts.push({
+            student_id: s.id,
+            course_id,
+            month,
+            session_number: sn,
+            amount: sessionPrice,
+            status: 'unpaid'
+          });
+        }
       }
     });
 
-    // Insert in batches of 100 to stay within Supabase limits
     let totalInserted = 0;
     for (let i = 0; i < inserts.length; i += 100) {
       const batch = inserts.slice(i, i + 100);
@@ -777,8 +898,47 @@ exports.generatePayments = async (req, res, next) => {
       totalInserted += (batchData || []).length;
     }
 
-    await logAudit(req, 'generate_payments', 'payment', null, { month, sessions: sessionCount, students: students.length, count: totalInserted });
-    res.json({ count: totalInserted, sessions: sessionCount, students: students.length });
+    await logAudit(req, 'generate_payments', 'payment', null, {
+      month, course_id, sessions: sessionCount, students: students.length, count: totalInserted
+    });
+
+    res.json({
+      count: totalInserted,
+      sessions: sessionCount,
+      students: students.length,
+      course: course.name
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Bulk mark a list of payment IDs as paid or unpaid in a single roundtrip.
+// Powers the "تحديد كمدفوع" multi-select action on the grid.
+exports.bulkMarkPayments = async (req, res, next) => {
+  try {
+    const { payment_ids, status } = req.body;
+    if (!Array.isArray(payment_ids) || payment_ids.length === 0) {
+      return res.status(400).json({ error: 'لم يتم اختيار أي سجلات' });
+    }
+    if (!['paid', 'unpaid'].includes(status)) {
+      return res.status(400).json({ error: 'حالة غير صالحة' });
+    }
+
+    const { data, error } = await supabase
+      .from('payments')
+      .update({
+        status,
+        verified_by: status === 'paid' ? req.user.id : null,
+        verified_at: status === 'paid' ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString()
+      })
+      .in('id', payment_ids)
+      .select('id');
+
+    if (error) throw error;
+    await logAudit(req, 'bulk_mark_payments', 'payment', null, { count: data.length, status });
+    res.json({ updated: data.length, status });
   } catch (err) {
     next(err);
   }

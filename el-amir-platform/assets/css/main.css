@@ -699,10 +699,11 @@ img {
    -------------------------------------------------- */
 
 .matrix-table th {
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
   font-size: 0.78rem;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none; /* Arabic does not have casing — uppercase breaks rendering on some fonts */
 }
 
 .matrix-square {
@@ -797,10 +798,13 @@ img {
   padding: 8px 12px;
   font-weight: 700;
   font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  text-transform: none;
+  letter-spacing: 0.02em;
   color: var(--accent);
   text-align: center;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.3;
 }
 
 /* Badge accent for accounts */
@@ -851,5 +855,70 @@ img {
   background: rgba(124, 58, 237, 0.12);
   padding: 4px 10px;
   border-radius: 12px;
+}
+
+/* ── Monthly merged "bar" cell — payments grid ─────────────
+   Renders one wide pill across N session columns for "monthly"
+   students. Same color semantics as matrix-square (green=paid,
+   red=unpaid) but stretched horizontally. */
+.matrix-bar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 4px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+.matrix-bar:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.matrix-bar.paid {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  box-shadow: 0 2px 8px rgba(39,174,96,0.4);
+}
+.matrix-bar.unpaid {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  box-shadow: 0 2px 8px rgba(231,76,60,0.4);
+}
+
+/* ── RTL text overflow fix ───────────────────────────────
+   Arabic names in narrow table cells were getting visually
+   clipped because `white-space:nowrap` + cell width would push
+   the last glyph past the cell edge. The fix is to allow
+   wrapping on word boundaries AND clip with ellipsis if a
+   single token is still too long. Apply to any cell that holds
+   user-entered Arabic text. */
+.rtl-cell {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+}
+
+/* Force the payments matrix table cells to not cut RTL text. */
+.payments-grid td,
+.payments-grid th {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ── Student-view timeline ──────────────────────────────── */
+.timeline {
+  display: grid;
+  gap: 12px;
+}
+.timeline-month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
 }
 

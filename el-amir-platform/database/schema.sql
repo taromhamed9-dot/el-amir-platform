@@ -138,6 +138,12 @@ CREATE TABLE IF NOT EXISTS payments (
 -- ALTER TABLE admins ADD COLUMN IF NOT EXISTS raw_password TEXT;
 -- ALTER TABLE teachers ADD COLUMN IF NOT EXISTS raw_password TEXT;
 -- ALTER TABLE students ADD COLUMN IF NOT EXISTS raw_password TEXT;
+
+-- ── PAYMENT SYSTEM v2 (see database/migration-payments-v2.sql) ─
+-- ALTER TABLE courses  ADD COLUMN IF NOT EXISTS session_price       DECIMAL(10,2) NOT NULL DEFAULT 0;
+-- ALTER TABLE courses  ADD COLUMN IF NOT EXISTS sessions_per_month  INTEGER NOT NULL DEFAULT 4 CHECK (sessions_per_month BETWEEN 1 AND 20);
+-- ALTER TABLE courses  ADD COLUMN IF NOT EXISTS session_labels      JSONB;
+-- ALTER TABLE students ADD COLUMN IF NOT EXISTS payment_model       VARCHAR(20) NOT NULL DEFAULT 'per_session' CHECK (payment_model IN ('monthly','per_session'));
 -- ALTER TABLE students ADD COLUMN IF NOT EXISTS teacher_id UUID REFERENCES teachers(id) ON DELETE SET NULL;
 -- NOTIFY pgrst, reload schema;
 -- ──────────────────────────────────────────────
