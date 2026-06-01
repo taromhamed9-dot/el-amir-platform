@@ -37,6 +37,40 @@
     font-size: 15px;
   }
 
+  /* Stop any deep child (long table row, full URL, long Arabic phrase)
+     from punching out past the viewport and creating horizontal scroll. */
+  body, .app-container, .main-content, .page-content {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Tables become horizontally-scrollable rectangles instead of pushing
+     the page sideways. The outer .table-container handles the scroll. */
+  .table-container {
+    overflow-x: auto;
+    max-width: calc(100vw - 32px);
+  }
+
+  /* Cards / panels with `display:flex` would otherwise stretch to fit
+     their no-wrap children. Force them to wrap. */
+  .card .card-header,
+  .filters-bar,
+  .flex.items-center.justify-between {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  /* Long Arabic text in cards / labels / spans should wrap, not clip. */
+  .card,
+  .stat-card,
+  .badge,
+  .form-label,
+  .toast,
+  .empty-state .description {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   /* Stat cards */
   .stat-card {
     padding: 14px;

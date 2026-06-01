@@ -1,6 +1,17 @@
+/* Lock the whole app to the viewport so deep children that overflow
+   (long tables, big modals) scroll within their container, not the
+   page. Without this, a wide table can push the body past 100vw and
+   create the mobile horizontal-scroll bug. */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 .app-container {
   display: flex;
   min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* ── Sidebar ────────────────────────────────────── */
@@ -164,6 +175,12 @@
 /* ── Main Content ───────────────────────────────── */
 .main-content {
   flex: 1;
+  /* min-width: 0 is the canonical fix for a flex child whose intrinsic
+     content (long tables, no-wrap rows) was pushing the flex container
+     past the viewport on mobile. */
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   margin-right: var(--sidebar-width);
   transition: margin-right var(--transition);
 }
@@ -206,6 +223,11 @@
   font-size: 1.1rem;
   font-weight: 600;
   flex: 1;
+  /* Allow truncation of long Arabic page titles in the topbar */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar .notifications-btn {
@@ -268,6 +290,13 @@
 .page-content {
   padding: 24px;
   max-width: 1400px;
+  /* Keep page content within parent so descendants with no-wrap
+     content scroll *inside* their own container instead of pushing
+     the page sideways. */
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 /* ── Responsive ─────────────────────────────────── */
