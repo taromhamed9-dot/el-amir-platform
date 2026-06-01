@@ -5,22 +5,13 @@ const LoginView = (() => {
     const app = document.getElementById('app');
     app.innerHTML = `
       <div class="login-page-wrapper">
-        <!-- Decorative Background Elements -->
-        <div class="login-grid-lines">
-          <div class="grid-line"></div>
-          <div class="grid-line"></div>
-          <div class="grid-line"></div>
-        </div>
-        <div class="bg-orb orb-1"></div>
-        <div class="bg-orb orb-2"></div>
-        <div class="bg-orb orb-3"></div>
-        
+        <!-- Slow upward grid drift is rendered by .login-page-wrapper::before — no decorative DOM nodes needed. -->
         <div class="login-container">
           <!-- Left/Top Side: Branding -->
           <div class="login-brand-side">
             <div class="brand-content">
               <div class="brand-logo-wrap float-animation">
-                <img src="assets/img/Logo.jpg" alt="Logo" class="brand-logo">
+                <img src="assets/img/Logo.png" alt="Logo" class="brand-logo">
               </div>
               <h1 class="brand-title">الأمير للتعليم</h1>
               <p class="brand-subtitle">نظام متكامل لإدارة التعليم بذكاء وفاعلية</p>

@@ -126,8 +126,22 @@
     font-size: 0.85rem;
   }
 
+  /* The shorthand `padding` above wipes out the desktop rule that reserves
+     36px on the left for the select chevron — put it back so the icon
+     never overlaps Arabic text on mobile. */
+  .form-select {
+    padding-left: 36px;
+    padding-right: 12px;
+  }
+
   .form-label {
     font-size: 0.8rem;
+    /* Allow Arabic labels to wrap onto multiple lines on small screens
+       instead of being cut at the edge of the form column. */
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
   }
 
   /* Tables - scroll horizontal */
@@ -478,6 +492,12 @@
   .form-select {
     padding: 8px 10px;
     font-size: 0.82rem;
+  }
+
+  /* Same padding-reset fix as the 768px breakpoint — preserve chevron gutter. */
+  .form-select {
+    padding-left: 32px;
+    padding-right: 10px;
   }
 
   .modal-content > div:first-child {
