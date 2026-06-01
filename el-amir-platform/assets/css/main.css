@@ -128,35 +128,20 @@ img {
 }
 
 /* --------------------------------------------------
-   Premium Login Page Styles — Dark Futuristic Neon Grid
-   -------------------------------------------------- */
+   Premium Login Page Styles — Minimal Dark Grid
+   --------------------------------------------------
+   Spec (user-requested):
+     • flat dark bg, no pink/purple glow on top, no cyan glow at bottom
+     • only the grid moves, very slowly, straight upward
+     • wide spacing between lines (120px)
+     • single linear-gradient pair → cheap on GPU
+     • no scan beams, no orbs, no perspective transform, no blur
+   This keeps the animation to one cheap `background-position` tween,
+   which the compositor can do at native refresh rate (no jank). */
 
-/* ── Neon grid motion ─────────────────────────────────
-   Two background-image layers (1px purple grid + 1px cyan grid)
-   slowly translate diagonally to give the sense of moving through
-   a 3D cyber grid. Plus a perspective-tilted overlay for depth. */
-@keyframes neonGridDrift {
-  0%   { background-position: 0px 0px, 0px 0px; }
-  100% { background-position: 80px 80px, -80px 40px; }
-}
-
-@keyframes neonGridPulse {
-  0%, 100% { opacity: 0.55; filter: drop-shadow(0 0 6px rgba(124,58,237,0.5)); }
-  50%      { opacity: 0.85; filter: drop-shadow(0 0 16px rgba(167,105,255,0.9)); }
-}
-
-@keyframes scanLine {
-  0%   { transform: translateY(-10vh); opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateY(110vh); opacity: 0; }
-}
-
-@keyframes scanLineSlow {
-  0%   { transform: translateY(110vh); opacity: 0; }
-  20%  { opacity: 0.8; }
-  80%  { opacity: 0.8; }
-  100% { transform: translateY(-10vh); opacity: 0; }
+@keyframes gridDriftUp {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 -120px; }   /* one full cell — seamless */
 }
 
 .login-page-wrapper {
@@ -165,147 +150,36 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(ellipse at top, rgba(74, 29, 107, 0.35) 0%, transparent 60%),
-    radial-gradient(ellipse at bottom right, rgba(232, 184, 75, 0.12) 0%, transparent 50%),
-    #050210;
+  background: #0a0614;        /* solid dark, no glows */
   position: relative;
   overflow: hidden;
 }
 
-/* Drifting neon grid — large + small lattice */
+/* The grid itself — one ::before layer, two 1px gradients
+   (horizontal + vertical), 120px spacing, slow upward drift. */
 .login-page-wrapper::before {
   content: '';
   position: absolute;
-  inset: -50% -50% -50% -50%;
+  inset: 0;
   background-image:
-    linear-gradient(rgba(167, 105, 255, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(167, 105, 255, 0.18) 1px, transparent 1px),
-    linear-gradient(rgba(56, 248, 255, 0.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 248, 255, 0.10) 1px, transparent 1px);
-  background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
-  transform: perspective(800px) rotateX(60deg);
-  transform-origin: center 60%;
-  animation: neonGridDrift 14s linear infinite, neonGridPulse 5s ease-in-out infinite;
+    linear-gradient(rgba(167, 105, 255, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167, 105, 255, 0.10) 1px, transparent 1px);
+  background-size: 120px 120px;
+  animation: gridDriftUp 40s linear infinite;
   pointer-events: none;
   z-index: 0;
-  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, transparent 75%);
+  /* GPU compositing hint: keep on its own layer so the rest of the
+     page doesn't get invalidated each frame. */
+  will-change: background-position;
+  transform: translateZ(0);
 }
 
-/* Soft top/bottom glow */
-.login-page-wrapper::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to bottom,
-      rgba(124, 58, 237, 0.20) 0%,
-      transparent 30%,
-      transparent 70%,
-      rgba(56, 248, 255, 0.12) 100%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Scan-line container: holds two horizontal neon beams that cross
-   the viewport on different rhythms. */
-.login-grid-lines {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.grid-line {
-  position: absolute;
-  left: -10%;
-  right: -10%;
-  height: 2px;
-  border-radius: 2px;
-  will-change: transform, opacity;
-  filter: blur(0.5px);
-}
-
-.grid-line:nth-child(1) {
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(167, 105, 255, 0) 5%,
-    rgba(167, 105, 255, 0.9) 50%,
-    rgba(167, 105, 255, 0) 95%,
-    transparent 100%);
-  box-shadow: 0 0 18px 2px rgba(167, 105, 255, 0.7), 0 0 60px 6px rgba(124, 58, 237, 0.35);
-  animation: scanLine 9s linear infinite;
-}
-
-.grid-line:nth-child(2) {
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(56, 248, 255, 0) 5%,
-    rgba(56, 248, 255, 0.85) 50%,
-    rgba(56, 248, 255, 0) 95%,
-    transparent 100%);
-  box-shadow: 0 0 18px 2px rgba(56, 248, 255, 0.6), 0 0 60px 6px rgba(56, 248, 255, 0.25);
-  animation: scanLineSlow 13s linear infinite;
-  animation-delay: -4s;
-  height: 1px;
-}
-
-.grid-line:nth-child(3) {
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(232, 184, 75, 0) 5%,
-    rgba(232, 184, 75, 0.75) 50%,
-    rgba(232, 184, 75, 0) 95%,
-    transparent 100%);
-  box-shadow: 0 0 14px 2px rgba(232, 184, 75, 0.5);
-  animation: scanLine 17s linear infinite;
-  animation-delay: -10s;
-  height: 1px;
-}
-
-/* Background orbs — subtler so the neon grid stays the hero */
-.bg-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.35;
-  animation: orbFloat 14s ease-in-out infinite alternate;
-  z-index: 0;
-  mix-blend-mode: screen;
-}
-
-.orb-1 {
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, rgba(167, 105, 255, 0.6) 0%, rgba(124, 58, 237, 0) 70%);
-  top: -18%;
-  right: -12%;
-}
-
-.orb-2 {
-  width: 380px;
-  height: 380px;
-  background: radial-gradient(circle, rgba(56, 248, 255, 0.45) 0%, rgba(56, 248, 255, 0) 70%);
-  bottom: -12%;
-  left: -10%;
-  animation-delay: -7s;
-}
-
-.orb-3 {
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, rgba(232, 184, 75, 0.4) 0%, rgba(232, 184, 75, 0) 70%);
-  top: 35%;
-  left: 18%;
-  animation-delay: -3s;
-}
-
-@keyframes orbFloat {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(25px, -40px) scale(1.08); }
-}
+/* Holdover containers from previous design — neutralized so any
+   leftover markup (`.login-grid-lines`, `.grid-line`, `.bg-orb`)
+   in views/login.js renders nothing. */
+.login-grid-lines,
+.grid-line,
+.bg-orb { display: none !important; }
 
 .login-container {
   display: flex;

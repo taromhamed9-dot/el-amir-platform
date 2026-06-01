@@ -53,7 +53,7 @@ const App = (() => {
       <div class="app-container">
         <aside class="sidebar" id="sidebar">
           <div class="sidebar-header">
-            <div class="logo" style="overflow:hidden;background:none;"><img src="assets/img/Logo.jpg" alt="Logo" style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="logo" style="overflow:hidden;background:none;"><img src="assets/img/Logo.png" alt="Logo" style="width:100%;height:100%;object-fit:cover;"></div>
             <span class="school-name">منصة المدرسة</span>
           </div>
           <nav class="sidebar-nav" id="sidebar-nav">
