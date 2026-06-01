@@ -1,0 +1,549 @@
+/* ══════════════════════════════════════════════════
+   Mobile Responsive Styles
+   Arabic RTL School Platform
+   ══════════════════════════════════════════════════ */
+
+/* ── Small Tablet (max 900px) ────────────────────── */
+@media (max-width: 900px) {
+  .stat-card .stat-value {
+    font-size: 1.4rem;
+  }
+
+  .stat-card .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .schedule-grid {
+    grid-template-columns: 60px repeat(7, 1fr);
+  }
+
+  .schedule-grid .header-cell,
+  .schedule-grid .time-cell,
+  .schedule-grid .session-cell {
+    padding: 6px 4px;
+    font-size: 0.75rem;
+  }
+
+  .admin-dashboard .stats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+/* ── Mobile (max 768px) ──────────────────────────── */
+@media (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+
+  /* Stat cards */
+  .stat-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-card .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.78rem;
+  }
+
+  /* Cards */
+  .card {
+    padding: 14px;
+  }
+
+  .card-header {
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .btn-lg {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+
+  /* Forms */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 9px 12px;
+    font-size: 0.85rem;
+  }
+
+  .form-label {
+    font-size: 0.8rem;
+  }
+
+  /* Tables - scroll horizontal */
+  .table-container {
+    border-radius: var(--radius-sm);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  .data-table th {
+    font-size: 0.75rem;
+  }
+
+  /* Filters bar */
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .filters-bar .search-input {
+    max-width: 100%;
+    min-width: auto;
+  }
+
+  .filters-bar .form-select {
+    width: 100%;
+    min-width: auto;
+  }
+
+  /* Pagination */
+  .pagination {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .pagination .page-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 40px 16px;
+  }
+
+  .empty-state .icon {
+    font-size: 2.5rem;
+  }
+
+  .empty-state .title {
+    font-size: 1rem;
+  }
+
+  .empty-state .description {
+    font-size: 0.82rem;
+  }
+
+  /* Badges */
+  .badge {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+
+  /* Flex layout helpers */
+  .flex.items-center.justify-between {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    padding: 10px !important;
+  }
+
+  .modal-content {
+    max-height: 95vh !important;
+  }
+
+  /* Login page */
+  .role-card {
+    padding: 16px !important;
+  }
+
+  /* Admin dashboard */
+  .admin-dashboard .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Progress bars */
+  .progress-bar {
+    height: 6px;
+  }
+
+  /* Student dashboard */
+  .student-dashboard .welcome-card {
+    padding: 16px;
+  }
+
+  .student-dashboard .welcome-card h2 {
+    font-size: 1.1rem;
+  }
+
+  .student-dashboard .quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Attendance calendar */
+  .attendance-calendar {
+    gap: 3px;
+  }
+
+  .attendance-calendar .day-cell {
+    font-size: 0.7rem;
+  }
+
+  /* Payment cards */
+  .payment-card {
+    padding: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Payment grid */
+  .payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .psc-squares {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+  }
+
+  .pay-square {
+    padding: 8px !important;
+  }
+
+  /* Attendance grid */
+  .att-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .asc-squares {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)) !important;
+  }
+
+  .att-square {
+    padding: 6px !important;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    padding: 20px;
+  }
+
+  /* Schedule grid on mobile - hide empty cells, stack layout */
+  .schedule-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: transparent;
+  }
+
+  .schedule-grid .header-cell {
+    display: none;
+  }
+
+  .schedule-grid .time-cell {
+    display: none;
+  }
+
+  .schedule-grid .session-cell {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  .schedule-grid .session-cell:not(.has-session) {
+    display: none;
+  }
+
+  .schedule-grid .session-cell.has-session {
+    border-right: 3px solid var(--primary-light);
+  }
+
+  /* Course cards */
+  .course-card {
+    padding: 14px;
+  }
+
+  .course-card .course-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .course-card .actions {
+    flex-wrap: wrap;
+  }
+
+  /* Step indicator */
+  .step-indicator {
+    gap: 4px;
+  }
+
+  .step-dot {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .step-line {
+    width: 24px;
+  }
+
+  /* Quick links grid in dashboard */
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Account cards */
+  .account-card .user-avatar-lg {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* SVG icons in stat cards */
+  .stat-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Form row stack */
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Email student list */
+  #email-student-list {
+    max-height: 150px !important;
+  }
+
+  /* Note cards */
+  .note-card {
+    padding: 12px;
+  }
+
+  .note-card .note-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Tabs overflow scroll */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+  }
+}
+
+/* ── Small Phone (max 480px) ──────────────────────── */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+
+  .page-content {
+    padding: 8px;
+  }
+
+  .topbar {
+    height: 52px;
+  }
+
+  .topbar .page-title {
+    font-size: 0.85rem;
+  }
+
+  .stat-card {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1rem;
+  }
+
+  .stat-card .stat-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.72rem;
+  }
+
+  .card {
+    padding: 10px;
+    border-radius: var(--radius-sm);
+  }
+
+  .admin-dashboard .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .student-dashboard .quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    gap: 4px;
+  }
+
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .modal-content > div:first-child {
+    padding: 14px 16px !important;
+  }
+
+  .modal-content > div:first-child h3 {
+    font-size: 0.95rem !important;
+  }
+
+  .modal-body {
+    padding: 16px !important;
+  }
+}
+
+/* ── Touch-friendly improvements ─────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .btn {
+    min-height: 40px;
+  }
+
+  .btn-sm {
+    min-height: 34px;
+  }
+
+  .nav-item {
+    padding: 14px 16px;
+  }
+
+  .form-input,
+  .form-select {
+    min-height: 42px;
+  }
+
+  .data-table tbody tr:active {
+    background: var(--bg-card-hover);
+  }
+
+  .status-btn {
+    min-height: 36px;
+  }
+
+  .tab-btn {
+    min-height: 40px;
+  }
+
+  .pagination .page-btn {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* ── Landscape phone adjustments ─────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  .sidebar {
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    min-height: 60px;
+    padding: 12px;
+  }
+
+  .sidebar-footer {
+    padding: 10px;
+  }
+
+  .page-content {
+    padding: 8px 12px;
+  }
+}
+
+/* ── Print styles ────────────────────────────────── */
+@media print {
+  .sidebar,
+  .topbar,
+  .sidebar-overlay,
+  .btn,
+  .filters-bar {
+    display: none !important;
+  }
+
+  .main-content {
+    margin: 0 !important;
+  }
+
+  .page-content {
+    padding: 0 !important;
+  }
+
+  .table-container {
+    border: none;
+  }
+
+  .data-table {
+    font-size: 10pt;
+  }
+
+  .stat-card {
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+}

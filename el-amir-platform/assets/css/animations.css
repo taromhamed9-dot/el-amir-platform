@@ -1,0 +1,275 @@
+/* Toast animations */
+@keyframes toastIn {
+  0% { opacity: 0; transform: translateX(100%) scale(0.9) translateY(10px); }
+  60% { opacity: 1; transform: translateX(-5%) scale(1.02) translateY(0); }
+  100% { opacity: 1; transform: translateX(0) scale(1) translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(100%) scale(0.9); }
+}
+
+/* Modal animations */
+@keyframes modalOverlayIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(4px); }
+}
+
+@keyframes modalContentIn {
+  0% { opacity: 0; transform: scale(0.95) translateY(30px); }
+  60% { opacity: 1; transform: scale(1.02) translateY(-5px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modalOverlayOut {
+  from { opacity: 1; backdrop-filter: blur(4px); }
+  to { opacity: 0; backdrop-filter: blur(0px); }
+}
+
+@keyframes modalContentOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.95) translateY(20px); }
+}
+
+/* Page transitions */
+@keyframes pageIn {
+  0% { opacity: 0; transform: translateY(20px) scale(0.99); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.page-enter {
+  animation: pageIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Pulse for notification badge */
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+.pulse {
+  animation: pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+/* Counter animation */
+@keyframes countUp {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.count-up {
+  animation: countUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger children */
+.stagger > * {
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* Login page animations */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.float-animation {
+  animation: floatUp 4s ease-in-out infinite;
+}
+
+/* Role card hover */
+.role-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.role-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(124, 58, 237, 0.3);
+}
+
+.role-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232, 184, 75, 0.4), 0 20px 40px rgba(0, 0, 0, 0.5);
+  transform: scale(1.02);
+}
+
+/* ── Enhanced Animations ─────────────────────────── */
+
+/* Glow pulse for accent elements */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(232, 184, 75, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(232, 184, 75, 0.6), 0 0 50px rgba(124, 58, 237, 0.3); }
+}
+
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Slide up for cards on load */
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(40px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scale bounce for buttons */
+@keyframes scaleBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Fade scale for modals/popovers */
+@keyframes fadeScale {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.fade-scale {
+  animation: fadeScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stat card entrance stagger */
+.stat-card {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+.stat-card:nth-child(5) { animation-delay: 0.25s; }
+.stat-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* Card hover glow */
+.card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card:hover {
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Button press effect */
+.btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Nav item active indicator glow */
+.nav-item {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-item.active {
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+  transform: translateX(4px);
+}
+
+/* Sidebar logo spin on hover */
+.sidebar-header .logo {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sidebar-header .logo:hover {
+  transform: rotate(10deg) scale(1.1);
+}
+
+/* Progress bar fill animation */
+.progress-bar .fill {
+  animation: progressFill 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes progressFill {
+  0% { width: 0; opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Table row fade-in */
+.data-table tbody tr {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(5px);
+}
+.data-table tbody tr:nth-child(1) { animation-delay: 0.03s; }
+.data-table tbody tr:nth-child(2) { animation-delay: 0.06s; }
+.data-table tbody tr:nth-child(3) { animation-delay: 0.09s; }
+.data-table tbody tr:nth-child(4) { animation-delay: 0.12s; }
+.data-table tbody tr:nth-child(5) { animation-delay: 0.15s; }
+.data-table tbody tr:nth-child(6) { animation-delay: 0.18s; }
+.data-table tbody tr:nth-child(7) { animation-delay: 0.21s; }
+.data-table tbody tr:nth-child(8) { animation-delay: 0.24s; }
+.data-table tbody tr:nth-child(9) { animation-delay: 0.27s; }
+.data-table tbody tr:nth-child(10) { animation-delay: 0.30s; }
+
+/* Tab button transition */
+.tab-btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tab-btn:hover {
+  background: rgba(124, 58, 237, 0.15);
+  transform: translateY(-1px);
+}
+
+.tab-btn.active {
+  background: rgba(124, 58, 237, 0.1);
+}
+
+/* Ripple effect on click */
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+/* Badge pulse */
+.topbar .notifications-btn .badge {
+  animation: pulse 2.5s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+/* Skeleton improved shimmer */
+.skeleton {
+  background: linear-gradient(110deg, var(--bg-card) 25%, rgba(124, 58, 237, 0.08) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  0% { opacity: 0; transform: translateX(30px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideDown {
+  0% { opacity: 0; transform: translateY(-15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* General classes */
+.animate-fade { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-slide { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-down { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
