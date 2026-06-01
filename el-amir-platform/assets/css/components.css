@@ -200,6 +200,8 @@
 .form-select,
 .form-textarea {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 10px 14px;
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -209,6 +211,12 @@
   font-size: 0.9rem;
   transition: border-color var(--transition), box-shadow var(--transition);
   outline: none;
+  /* RTL text clipping fix: allow the field to truncate with an ellipsis
+     instead of cutting glyphs at the edge. text-overflow needs
+     overflow:hidden + white-space:nowrap to take effect on inputs. */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .form-input:focus,
@@ -235,12 +243,44 @@
 .form-textarea {
   resize: vertical;
   min-height: 100px;
+  /* Textareas wrap, override the input ellipsis rules */
+  white-space: pre-wrap;
+  overflow: auto;
+  text-overflow: clip;
+}
+
+/* Form labels should never truncate Arabic text. */
+.form-label {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
 }
 
 .form-error {
   font-size: 0.8rem;
   color: var(--danger);
   margin-top: 4px;
+}
+
+/* ── Modal content overflow guards ─────────────────
+   Inline styles set most of the dialog look in modal.js,
+   but we add safety rails here so deep children (long
+   tables, code blocks, Arabic phrases) can't push the
+   dialog past the viewport on phones. */
+.modal-content {
+  overflow-x: hidden;
+}
+.modal-body {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  /* horizontal scroll is fine for explicit children, like .table-container */
+  overflow-x: hidden;
+}
+.modal-body .table-container {
+  /* Tables inside modals get their own horizontal scroll. */
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .form-row {
@@ -271,13 +311,26 @@
 
 /* ── Tables ──────────────────────────────────────── */
 .table-container {
+  /* Scroll horizontally inside the container only, so wide tables
+     never push the whole page sideways on mobile. */
   overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
   border-radius: var(--radius);
   border: 1px solid var(--border);
+  /* Subtle inset shadow on the right edge hints "swipe me" on mobile */
+  background:
+    linear-gradient(to left, var(--bg-card) 30%, rgba(255,255,255,0)) right center / 30px 100% no-repeat,
+    var(--bg-card);
 }
 
 .data-table {
-  width: 100%;
+  /* width:max-content lets the table size to its content so .table-container
+     becomes the scroll axis on mobile, instead of the table stretching past
+     the viewport. */
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
 }

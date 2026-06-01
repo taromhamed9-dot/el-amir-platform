@@ -128,20 +128,35 @@ img {
 }
 
 /* --------------------------------------------------
-   Premium Login Page Styles — Dark Futuristic
+   Premium Login Page Styles — Dark Futuristic Neon Grid
    -------------------------------------------------- */
 
-/* Animated grid lines keyframes */
-@keyframes gridLineMove {
-  0%   { transform: translateY(100vh); opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateY(-20px); opacity: 0; }
+/* ── Neon grid motion ─────────────────────────────────
+   Two background-image layers (1px purple grid + 1px cyan grid)
+   slowly translate diagonally to give the sense of moving through
+   a 3D cyber grid. Plus a perspective-tilted overlay for depth. */
+@keyframes neonGridDrift {
+  0%   { background-position: 0px 0px, 0px 0px; }
+  100% { background-position: 80px 80px, -80px 40px; }
 }
 
-@keyframes gridLinePulse {
-  0%, 100% { box-shadow: 0 0 8px 1px rgba(124, 58, 237, 0.5), 0 0 20px 2px rgba(124, 58, 237, 0.2); }
-  50%       { box-shadow: 0 0 16px 2px rgba(124, 58, 237, 0.9), 0 0 40px 4px rgba(124, 58, 237, 0.4), 0 0 60px 6px rgba(232, 184, 75, 0.15); }
+@keyframes neonGridPulse {
+  0%, 100% { opacity: 0.55; filter: drop-shadow(0 0 6px rgba(124,58,237,0.5)); }
+  50%      { opacity: 0.85; filter: drop-shadow(0 0 16px rgba(167,105,255,0.9)); }
+}
+
+@keyframes scanLine {
+  0%   { transform: translateY(-10vh); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(110vh); opacity: 0; }
+}
+
+@keyframes scanLineSlow {
+  0%   { transform: translateY(110vh); opacity: 0; }
+  20%  { opacity: 0.8; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateY(-10vh); opacity: 0; }
 }
 
 .login-page-wrapper {
@@ -150,29 +165,51 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0a0614;
+  background:
+    radial-gradient(ellipse at top, rgba(74, 29, 107, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(232, 184, 75, 0.12) 0%, transparent 50%),
+    #050210;
   position: relative;
   overflow: hidden;
 }
 
-/* Subtle radial glow behind the card */
+/* Drifting neon grid — large + small lattice */
 .login-page-wrapper::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 900px;
-  height: 600px;
-  background: radial-gradient(ellipse at center,
-    rgba(74, 29, 107, 0.35) 0%,
-    rgba(124, 58, 237, 0.1) 40%,
-    transparent 70%);
+  inset: -50% -50% -50% -50%;
+  background-image:
+    linear-gradient(rgba(167, 105, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167, 105, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(rgba(56, 248, 255, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 248, 255, 0.10) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+  transform: perspective(800px) rotateX(60deg);
+  transform-origin: center 60%;
+  animation: neonGridDrift 14s linear infinite, neonGridPulse 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 40%, transparent 75%);
+}
+
+/* Soft top/bottom glow */
+.login-page-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(124, 58, 237, 0.20) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(56, 248, 255, 0.12) 100%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* Grid line container */
+/* Scan-line container: holds two horizontal neon beams that cross
+   the viewport on different rhythms. */
 .login-grid-lines {
   position: absolute;
   inset: 0;
@@ -181,80 +218,87 @@ img {
   overflow: hidden;
 }
 
-/* Individual horizontal glowing lines */
 .grid-line {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(124, 58, 237, 0.1) 10%,
-    rgba(124, 58, 237, 0.8) 30%,
-    rgba(167, 105, 255, 1) 50%,
-    rgba(124, 58, 237, 0.8) 70%,
-    rgba(124, 58, 237, 0.1) 90%,
-    transparent 100%);
-  animation: gridLineMove linear infinite, gridLinePulse 2s ease-in-out infinite;
+  left: -10%;
+  right: -10%;
+  height: 2px;
+  border-radius: 2px;
   will-change: transform, opacity;
+  filter: blur(0.5px);
 }
 
 .grid-line:nth-child(1) {
-  animation-duration: 8s, 2s;
-  animation-delay: 0s, 0s;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(167, 105, 255, 0) 5%,
+    rgba(167, 105, 255, 0.9) 50%,
+    rgba(167, 105, 255, 0) 95%,
+    transparent 100%);
+  box-shadow: 0 0 18px 2px rgba(167, 105, 255, 0.7), 0 0 60px 6px rgba(124, 58, 237, 0.35);
+  animation: scanLine 9s linear infinite;
 }
 
 .grid-line:nth-child(2) {
-  animation-duration: 11s, 2.5s;
-  animation-delay: -3.5s, -0.8s;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(232, 184, 75, 0.05) 10%,
-    rgba(124, 58, 237, 0.6) 35%,
-    rgba(232, 184, 75, 0.7) 50%,
-    rgba(124, 58, 237, 0.6) 65%,
-    rgba(232, 184, 75, 0.05) 90%,
+    rgba(56, 248, 255, 0) 5%,
+    rgba(56, 248, 255, 0.85) 50%,
+    rgba(56, 248, 255, 0) 95%,
     transparent 100%);
+  box-shadow: 0 0 18px 2px rgba(56, 248, 255, 0.6), 0 0 60px 6px rgba(56, 248, 255, 0.25);
+  animation: scanLineSlow 13s linear infinite;
+  animation-delay: -4s;
+  height: 1px;
 }
 
 .grid-line:nth-child(3) {
-  animation-duration: 14s, 3s;
-  animation-delay: -7s, -1.5s;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(232, 184, 75, 0) 5%,
+    rgba(232, 184, 75, 0.75) 50%,
+    rgba(232, 184, 75, 0) 95%,
+    transparent 100%);
+  box-shadow: 0 0 14px 2px rgba(232, 184, 75, 0.5);
+  animation: scanLine 17s linear infinite;
+  animation-delay: -10s;
+  height: 1px;
 }
 
-/* Background orbs kept but darker */
+/* Background orbs — subtler so the neon grid stays the hero */
 .bg-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.25;
-  animation: orbFloat 12s ease-in-out infinite alternate;
+  filter: blur(120px);
+  opacity: 0.35;
+  animation: orbFloat 14s ease-in-out infinite alternate;
   z-index: 0;
+  mix-blend-mode: screen;
 }
 
 .orb-1 {
-  width: 500px;
-  height: 500px;
-  background: rgba(74, 29, 107, 0.8);
-  top: -15%;
-  right: -10%;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(167, 105, 255, 0.6) 0%, rgba(124, 58, 237, 0) 70%);
+  top: -18%;
+  right: -12%;
 }
 
 .orb-2 {
-  width: 350px;
-  height: 350px;
-  background: rgba(232, 184, 75, 0.4);
-  bottom: -10%;
-  left: -8%;
-  animation-delay: -6s;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(56, 248, 255, 0.45) 0%, rgba(56, 248, 255, 0) 70%);
+  bottom: -12%;
+  left: -10%;
+  animation-delay: -7s;
 }
 
 .orb-3 {
-  width: 300px;
-  height: 300px;
-  background: rgba(124, 58, 237, 0.5);
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(232, 184, 75, 0.4) 0%, rgba(232, 184, 75, 0) 70%);
   top: 35%;
-  left: 15%;
+  left: 18%;
   animation-delay: -3s;
 }
 
